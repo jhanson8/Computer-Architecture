@@ -7,11 +7,14 @@ class CPU:
 
     def __init__(self):
         """Construct a new CPU."""
-        #8 bit 
+        #8 bit program 
         self.reg = [0] * 8
-        #256 RAM 
+        #RAM: 256 
         self.ram = [0] * 256
-        self.pc = 0 
+        #program counter: index of current instruction 
+        self.pc = 0
+        #Program in running initially 
+        self.running = True  
 
 
 
@@ -73,4 +76,30 @@ class CPU:
 
     def run(self):
         """Run the CPU."""
-        pass
+        while self.running:
+            ir = self.ram_read(self.pc)
+            # Halt
+            # 0b before binary is used so python can read binary  
+            if ir == 0b00000001:
+                self.running == False
+                self.pc += 1
+            #LDI: set the value of a register to an integer
+            elif ir == 0b10000010:
+                operand_a = self.ram_read(self.pc + 1)
+                operand_b = self.ram_read(self.pc + 2)
+                self.reg[operand_a] = operand_b
+                self.pc += 3
+            # PRN  
+            elif ir == 0b01000111:
+                operand_a = self.ram_read(self.pc + 1)
+                data = self.reg[operand_a]
+                print(data)
+                self.pc += 2 
+            else:
+                print(f'Unknown instruction {ir} at address {self.pc}')
+                sys.exit(1)
+
+
+
+
+            
