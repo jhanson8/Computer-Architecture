@@ -20,24 +20,44 @@ class CPU:
 
     def load(self):
         """Load a program into memory."""
-
+        filename = sys.argv[1]
+        # print(filename)
         address = 0
+        try:
+            with open(filename) as f:
+                for line in f:
+                    line = line.split('#')
+                    # num = line[0].strip()
+                    # if num == '':
+                    #     continue 
+                    try:
+                        v = int(line[0], 2)
+                    except ValueError:
+                        continue
+                    self.ram[address] = v
+                    address += 1
+                    
+        except FileNotFoundError:
+            print(f"{sys.argv[0]}: {sys.argv[1]} not found")
+            sys.exit(2)
+                    
+                
 
         # For now, we've just hardcoded a program:
 
-        program = [
-            # From print8.ls8
-            0b10000010, # LDI R0,8
-            0b00000000,
-            0b00001000,
-            0b01000111, # PRN R0
-            0b00000000,
-            0b00000001, # HLT
-        ]
+        # program = [
+        #     # From print8.ls8
+        #     0b10000010, # LDI R0,8
+        #     0b00000000,
+        #     0b00001000,
+        #     0b01000111, # PRN R0
+        #     0b00000000,
+        #     0b00000001, # HLT
+        # ]
 
-        for instruction in program:
-            self.ram[address] = instruction
-            address += 1
+        # for instruction in program:
+        #     self.ram[address] = instruction
+        #     address += 1
 
     def ram_read(self, address):
         return self.ram[address] 
@@ -78,6 +98,8 @@ class CPU:
         """Run the CPU."""
         while self.running:
             ir = self.ram_read(self.pc)
+            operand_a = self.ram_read(self.pc + 1)
+            operand_b = self.ram_read(self.pc + 2)
             # Halt
             # 0b before binary is used so python can read binary  
             if ir == 0b00000001:
@@ -85,13 +107,13 @@ class CPU:
                 self.pc += 1
             #LDI: set the value of a register to an integer
             elif ir == 0b10000010:
-                operand_a = self.ram_read(self.pc + 1)
-                operand_b = self.ram_read(self.pc + 2)
+                # operand_a = self.ram_read(self.pc + 1)
+                # operand_b = self.ram_read(self.pc + 2)
                 self.reg[operand_a] = operand_b
                 self.pc += 3
             # PRN  
             elif ir == 0b01000111:
-                operand_a = self.ram_read(self.pc + 1)
+                # operand_a = self.ram_read(self.pc + 1)
                 data = self.reg[operand_a]
                 print(data)
                 self.pc += 2 
