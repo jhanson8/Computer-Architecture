@@ -14,7 +14,16 @@ class CPU:
         #program counter: index of current instruction 
         self.pc = 0
         #Program in running initially 
-        self.running = True  
+        self.running = True 
+        self.operand_a = 0
+        self.operand_b = 0
+        self.call_func = {
+             0b00000001: self.hlt,
+             0b01000111: self.prn,
+             0b10000010: self.ldi,
+             0b10100000: self.add,
+             0b10100010: self.mul
+        } 
 
 
 
@@ -71,9 +80,26 @@ class CPU:
         if op == "ADD":
             self.reg[reg_a] += self.reg[reg_b]
         #elif op == "SUB": etc
+        elif op == "MUL":
+            self.reg[reg_a] += self.reg[reg_b]
         else:
             raise Exception("Unsupported ALU operation")
 
+    def mul(self):
+        self.alu('MUL', self.operand_a, self.operand_b)
+
+    def add(self):
+        self.alu('ADD', self.operand_a, self.operand_b)
+
+    def hlt(self):
+        self.running = False 
+
+    def ldi(self):
+        self.reg[self.operand_a] = self.operand_b
+    
+    def prn(self):
+        print(self.reg[self.operand_a])
+    
     def trace(self):
         """
         Handy function to print out the CPU state. You might want to call this
@@ -98,28 +124,33 @@ class CPU:
         """Run the CPU."""
         while self.running:
             ir = self.ram_read(self.pc)
-            operand_a = self.ram_read(self.pc + 1)
-            operand_b = self.ram_read(self.pc + 2)
-            # Halt
-            # 0b before binary is used so python can read binary  
-            if ir == 0b00000001:
-                self.running == False
-                self.pc += 1
-            #LDI: set the value of a register to an integer
-            elif ir == 0b10000010:
-                # operand_a = self.ram_read(self.pc + 1)
-                # operand_b = self.ram_read(self.pc + 2)
-                self.reg[operand_a] = operand_b
-                self.pc += 3
-            # PRN  
-            elif ir == 0b01000111:
-                # operand_a = self.ram_read(self.pc + 1)
-                data = self.reg[operand_a]
-                print(data)
-                self.pc += 2 
-            else:
-                print(f'Unknown instruction {ir} at address {self.pc}')
-                sys.exit(1)
+            self.operand_a = self.ram_read(self.pc + 1)
+            self.operand_b = self.ram_read(self.pc + 2)
+
+            self.call_func[ir]()
+            if f'{ir:08b}'[3] == '0':
+                self.pc += (ir >> 6) + 1
+
+            # # Halt
+            # # 0b before binary is used so python can read binary  
+            # if ir == 0b00000001:
+            #     self.running == False
+            #     self.pc += 1
+            # #LDI: set the value of a register to an integer
+            # elif ir == 0b10000010:
+            #     # operand_a = self.ram_read(self.pc + 1)
+            #     # operand_b = self.ram_read(self.pc + 2)
+            #     self.reg[operand_a] = operand_b
+            #     self.pc += 3
+            # # PRN  
+            # elif ir == 0b01000111:
+            #     # operand_a = self.ram_read(self.pc + 1)
+            #     data = self.reg[operand_a]
+            #     print(data)
+            #     self.pc += 2
+            # else:
+            #     print(f'Unknown instruction {ir} at address {self.pc}')
+            #     sys.exit(1)
 
 
 
