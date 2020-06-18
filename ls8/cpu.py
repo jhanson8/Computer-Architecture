@@ -18,6 +18,7 @@ class CPU:
         self.operand_a = 0
         self.operand_b = 0
         self.stack_pointer = 0
+        self.flag: 0
         self.call_func = {
              0b00000001: self.hlt,
              0b01000111: self.prn,
@@ -25,7 +26,9 @@ class CPU:
              0b10100000: self.add,
              0b10100010: self.mul,
              0b01000101: self.push,
-             0b01000110: self.pop
+             0b01000110: self.pop,
+             0b00010001: self.ret,
+             0b01010000: self.call
         } 
 
 
@@ -107,13 +110,26 @@ class CPU:
         self.reg[7] -= 1
         self.stack_pointer = self.reg[7]
         self.ram[self.stack_pointer] = self.reg[self.operand_a]
-    
+
     def pop(self):
         self.stack_pointer = self.reg[7]
         val = self.ram[self.stack_pointer]
         self.reg[self.operand_a] = val
         self.reg[7] += 1
-         
+
+    def call(self):
+        self.reg[7] -= 1
+        self.stack_pointer = self.reg[7]
+        self.ram[self.stack_pointer] = (self.pc+ 2)
+        # self.ram_write(self.program_counter + 2, self.stack_pointer)
+        self.pc = (self.reg[self.operand_a])
+
+    def ret(self):
+        self.stack_pointer = self.reg[7]
+        val = self.ram_read(self.stack_pointer)
+        # val = self.ram[self.stack_pointer]
+        self.pc = val
+        self.reg[7] += 1 
     
     def trace(self):
         """
