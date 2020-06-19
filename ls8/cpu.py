@@ -32,7 +32,8 @@ class CPU:
              0b10100111: self.cmp,
              0b01010100: self.jmp,
              0b01010101: self.jeq,
-             0b01010110: self.jne
+             0b01010110: self.jne,
+             0b10101000: self.and
         }
 
 
@@ -97,6 +98,8 @@ class CPU:
                 self.flag = 0b00000001
             else:
                 self.flag = 0b00000000
+        elif op == "AND":
+            elf.reg[reg_a] &= self.reg[reg_b]:
         else:
             raise Exception("Unsupported ALU operation")
 
@@ -158,6 +161,9 @@ class CPU:
              self.jmp()
         else:
             self.pc += 2
+
+    def and(self):
+        self.alu('AND', self.operand_a, self.operand_b)
     
     def trace(self):
         """
