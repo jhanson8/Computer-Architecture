@@ -28,8 +28,12 @@ class CPU:
              0b01000101: self.push,
              0b01000110: self.pop,
              0b00010001: self.ret,
-             0b01010000: self.call
-        } 
+             0b01010000: self.call,
+             0b10100111: self.cmp,
+             0b01010100: self.jmp,
+             0b01010101: self.jeq,
+             0b01010110: self.jne
+        }
 
 
 
@@ -87,7 +91,12 @@ class CPU:
             self.reg[reg_a] += self.reg[reg_b]
         #elif op == "SUB": etc
         elif op == "MUL":
-            self.reg[reg_a] += self.reg[reg_b]
+            self.reg[reg_a] *= self.reg[reg_b]
+        elif op == "CMP":
+            if self.reg[reg_a] == self.reg[reg_b]:
+                self.flag = 0b00000001
+            else:
+                self.flag = 0b00000000
         else:
             raise Exception("Unsupported ALU operation")
 
@@ -129,7 +138,26 @@ class CPU:
         val = self.ram_read(self.stack_pointer)
         # val = self.ram[self.stack_pointer]
         self.pc = val
-        self.reg[7] += 1 
+        self.reg[7] += 1
+
+    #Sprint Challenge
+    def cmp(self):
+        self.alu('CMP', self.operand_a, self.operand_b)
+
+    def jmp(self):
+        self.pc = self.reg[self.operand_a]
+
+    def jeq(self):
+        if self.flag == 0b00000001:
+            self.jmp()
+        else:
+            self.pc += 2
+
+    def jne(self):
+        if self.flag == 0b00000000:
+             self.jmp()
+        else:
+            self.pc += 2
     
     def trace(self):
         """
